@@ -2,13 +2,6 @@ import os
 import re
 import requests
 import telebot
-from telebot import apihelper
-
-# --- ضبط بروكسي PythonAnywhere لتفادي خطأ 503 ---
-proxy_url = "http://proxy.server:3128"
-os.environ['HTTP_PROXY'] = proxy_url
-os.environ['HTTPS_PROXY'] = proxy_url
-apihelper.proxy = {'https': proxy_url}
 
 TELEGRAM_BOT_TOKEN = "8839833163:AAHD4c9AzbPnQgOtb-iHmSyuE_XmlP4glVY"
 URLSCAN_API_KEY = "019fade6-6a73-7770-afcf-9041943cdad7"
@@ -44,13 +37,12 @@ def fast_check_url(target_url):
             f"🚫 تنبيه: لا تقم بفتح الرابط أو إدخال أي بيانات."
         )
 
-    # 3. بحث سريع عبر API مع ضبط البروكسي
+    # 3. بحث سريع عبر API (بدون بروكسي لأن Render لا يحتاجه)
     search_endpoint = f"https://urlscan.io/api/v1/search/?q=domain:{domain}"
     headers = {'API-Key': URLSCAN_API_KEY}
-    proxies = {'http': proxy_url, 'https': proxy_url}
 
     try:
-        res = requests.get(search_endpoint, headers=headers, proxies=proxies, timeout=5)
+        res = requests.get(search_endpoint, headers=headers, timeout=5)
         if res.status_code == 200:
             results = res.json().get('results', [])
             if results:
@@ -91,5 +83,5 @@ def handle_url(message):
         result = fast_check_url(clean_url)
         bot.reply_to(message, result, parse_mode="Markdown")
 
-# إعادة المحاولة التلقائية عند انقطاع البروكسي
+# تشغيل البوت باستمرار
 bot.infinity_polling(timeout=10, long_polling_timeout=5)
